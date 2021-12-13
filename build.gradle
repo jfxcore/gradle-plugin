@@ -31,6 +31,9 @@ dependencies {
     implementation 'org.javamodularity:moduleplugin:1.8.10'
     implementation 'org.jfxcore:compiler:[0.1,0.2)'
 
+    runtimeOnly "org.jfxcore:javafx-base:${project.version}"
+    runtimeOnly "org.jfxcore:javafx-graphics:${project.version}"
+
     testImplementation gradleTestKit()
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
