@@ -30,6 +30,8 @@ dependencies {
     implementation 'com.google.gradle:osdetector-gradle-plugin:1.7.0'
     implementation 'org.javamodularity:moduleplugin:1.8.10'
     implementation 'org.jfxcore:compiler:[0.1,0.2)'
+    implementation "org.jfxcore:javafx-base:${project.version}"
+    implementation "org.jfxcore:javafx-graphics:${project.version}"
 
     testImplementation gradleTestKit()
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
