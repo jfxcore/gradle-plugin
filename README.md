@@ -1,10 +1,6 @@
-# JavaFX Gradle Plugin
+# JFXcore Gradle Plugin
 
-Simplifies working with JavaFX 11+ for gradle projects.
-
-[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/org/openjfx/javafxplugin/org.openjfx.javafxplugin.gradle.plugin/maven-metadata.xml.svg?label=Gradle%20Plugin)](https://plugins.gradle.org/plugin/org.openjfx.javafxplugin)
-[![Travis CI](https://api.travis-ci.com/openjfx/javafx-gradle-plugin.svg?branch=master)](https://travis-ci.com/openjfx/javafx-gradle-plugin)
-[![BSD-3 license](https://img.shields.io/badge/license-BSD--3-%230778B9.svg)](https://opensource.org/licenses/BSD-3-Clause)
+Simplifies working with JFXcore for gradle projects.
 
 ## Getting started
 
@@ -17,13 +13,13 @@ To use the plugin, apply the following two steps:
 **Groovy**
 
     plugins {
-        id 'org.openjfx.javafxplugin' version '0.0.10'
+        id 'org.jfxcore.javafxplugin' version '18'
     }
 
 **Kotlin**
 
     plugins {
-        id("org.openjfx.javafxplugin") version "0.0.10"
+        id("org.jfxcore.javafxplugin") version "18"
     }
 
 ##### Alternatively, you can use the `buildscript` DSL:
@@ -37,10 +33,10 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath 'org.openjfx:javafx-plugin:0.0.10'
+            classpath 'org.jfxcore:javafx-plugin:18'
         }
     }
-    apply plugin: 'org.openjfx.javafxplugin'
+    apply plugin: 'org.jfxcore.javafxplugin'
 
 **Kotlin**
 
@@ -51,15 +47,15 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath("org.openjfx:javafx-plugin:0.0.10")
+            classpath("org.jfxcore:javafx-plugin:18")
         }
     }
-    apply(plugin = "org.openjfx.javafxplugin")
+    apply(plugin = "org.jfxcore.javafxplugin")
 
 
-### 2. Specify JavaFX modules
+### 2. Specify JFXcore modules
 
-Specify all the JavaFX modules that your project uses:
+Specify all the JFXcore modules that your project uses:
 
 **Groovy**
 
@@ -72,29 +68,10 @@ Specify all the JavaFX modules that your project uses:
     javafx {
         modules("javafx.controls", "javafx.fxml")
     }
-    
-### 3. Specify JavaFX version
 
-To override the default JavaFX version, a version string can be declared.
-This will make sure that all the modules belong to this specific version:
+### 3. Cross-platform projects and libraries
 
-**Groovy**
-
-    javafx {
-        version = '12'
-        modules = [ 'javafx.controls', 'javafx.fxml' ]
-    }
-
-**Kotlin**
-
-    javafx {
-        version = "12"
-        modules("javafx.controls", "javafx.fxml")
-    }
-
-### 4. Cross-platform projects and libraries
-
-JavaFX modules require native binaries for each platform. The plugin only
+JFXcore modules require native binaries for each platform. The plugin only
 includes binaries for the platform running the build. By declaring the 
 dependency configuration **compileOnly**, the native binaries will not be 
 included. You will need to provide those separately during deployment for 
@@ -103,7 +80,6 @@ each target platform.
 **Groovy**
 
     javafx {
-        version = '12'
         modules = [ 'javafx.controls', 'javafx.fxml' ]
         configuration = 'compileOnly'
     }
@@ -111,18 +87,17 @@ each target platform.
 **Kotlin**
 
     javafx {
-        version = "12"
         modules("javafx.controls", "javafx.fxml")
         configuration = "compileOnly"
     }
 
-### 5. Using a local JavaFX SDK
+### 4. Using a local JFXcore SDK
 
-By default, JavaFX modules are retrieved from Maven Central. 
-However, a local JavaFX SDK can be used instead, for instance in the case of 
-a custom build of OpenJFX.
+By default, JFXcore modules are retrieved from Maven Central. 
+However, a local JFXcore SDK can be used instead, for instance in the case of 
+a custom build of JFXcore.
 
-Setting a valid path to the local JavaFX SDK will take precedence:
+Setting a valid path to the local JFXcore SDK will take precedence:
 
 **Groovy**
 
@@ -137,10 +112,3 @@ Setting a valid path to the local JavaFX SDK will take precedence:
         sdk = "/path/to/javafx-sdk"
         modules("javafx.controls", "javafx.fxml")
     }
-    
-## Issues and Contributions ##
-
-Issues can be reported to the [Issue tracker](https://github.com/openjfx/javafx-gradle-plugin/issues/).
-
-Contributions can be submitted via [Pull requests](https://github.com/openjfx/javafx-gradle-plugin/pulls/), 
-providing you have signed the [Gluon Individual Contributor License Agreement (CLA)](https://cla.gluonhq.com/).

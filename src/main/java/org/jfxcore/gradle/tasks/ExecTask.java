@@ -27,7 +27,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.openjfx.gradle.tasks;
+package org.jfxcore.gradle.tasks;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
@@ -39,12 +39,14 @@ import org.gradle.api.plugins.ApplicationPlugin;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskAction;
 import org.javamodularity.moduleplugin.extensions.RunModuleOptions;
-import org.openjfx.gradle.JavaFXModule;
-import org.openjfx.gradle.JavaFXOptions;
-import org.openjfx.gradle.JavaFXPlatform;
+import org.jfxcore.gradle.JavaFXModule;
+import org.jfxcore.gradle.JavaFXOptions;
+import org.jfxcore.gradle.JavaFXPlatform;
+import org.jfxcore.gradle.util.ModuleHelper;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -71,12 +73,16 @@ public class ExecTask extends DefaultTask {
     }
 
     @TaskAction
-    public void action() {
+    public void action() throws IOException {
         if (execTask != null) {
             JavaFXOptions javaFXOptions = project.getExtensions().getByType(JavaFXOptions.class);
             JavaFXModule.validateModules(javaFXOptions.getModules());
 
-            var definedJavaFXModuleNames = new TreeSet<>(javaFXOptions.getModules());
+            var moduleHelper = new ModuleHelper(project);
+            var definedJavaFXModuleNames = new TreeSet<String>();
+            definedJavaFXModuleNames.addAll(javaFXOptions.getModules());
+            definedJavaFXModuleNames.addAll(moduleHelper.getKotlinModuleNames());
+
             if (!definedJavaFXModuleNames.isEmpty()) {
                 RunModuleOptions moduleOptions = execTask.getExtensions().findByType(RunModuleOptions.class);
 
@@ -95,7 +101,17 @@ public class ExecTask extends DefaultTask {
                     // Remove all JavaFX jars from classpath
                     execTask.setClasspath(classpathWithoutJavaFXJars);
 
-                    var javaFXModuleJvmArgs = List.of("--module-path", javaFXPlatformJars.getAsPath());
+                    var modulePath = new StringBuilder();
+                    for (var path : moduleHelper.getKotlinJarPaths()) {
+                        if (modulePath.length() > 0) modulePath.append(File.pathSeparator);
+                        modulePath.append(path.getCanonicalPath());
+                    }
+                    for (var path : javaFXPlatformJars) {
+                        if (modulePath.length() > 0) modulePath.append(File.pathSeparator);
+                        modulePath.append(path.getCanonicalPath());
+                    }
+
+                    List<String> javaFXModuleJvmArgs = List.of("--module-path", modulePath.toString());
 
                     var jvmArgs = new ArrayList<String>();
                     jvmArgs.add("--add-modules");

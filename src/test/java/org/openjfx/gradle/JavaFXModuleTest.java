@@ -30,6 +30,7 @@
 package org.openjfx.gradle;
 
 import org.gradle.api.GradleException;
+import org.jfxcore.gradle.JavaFXModule;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

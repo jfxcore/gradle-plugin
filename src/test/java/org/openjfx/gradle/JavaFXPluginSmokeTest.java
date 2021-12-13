@@ -43,7 +43,7 @@ class JavaFXPluginSmokeTest {
     void smokeTest() {
         var result = GradleRunner.create()
                 .withProjectDir(new File("test-project"))
-                .withGradleVersion("6.0.1")
+                .withGradleVersion("6.3")
                 .withArguments("clean", "build", "run", "--stacktrace")
                 .forwardOutput()
                 .build();

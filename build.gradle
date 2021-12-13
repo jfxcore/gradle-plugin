@@ -1,88 +1,113 @@
 plugins {
-    id 'com.gradle.build-scan' version '2.1'
     id 'java-gradle-plugin'
-    id 'com.github.hierynomus.license' version '0.15.0'
-    id 'com.gradle.plugin-publish' version '0.12.0'
+    id 'com.gradle.plugin-publish' version '0.18.0'
     id 'com.github.ben-manes.versions' version '0.20.0'
     id 'maven-publish'
+    id 'signing'
 }
 
-buildScan {
-    termsOfServiceUrl   = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
+group 'org.jfxcore'
+version '18-SNAPSHOT'
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
 }
-
-group 'org.openjfx'
-version '0.0.11-SNAPSHOT'
-
-sourceCompatibility = 11
-targetCompatibility = 11
 
 repositories {
     mavenCentral()
     maven {
-        url "https://plugins.gradle.org/m2/"
+        url 'https://plugins.gradle.org/m2/'
     }
 }
 
 dependencies {
     implementation gradleApi()
 
-    implementation 'com.google.gradle:osdetector-gradle-plugin:1.6.1'
-    implementation 'org.javamodularity:moduleplugin:1.8.2'
+    implementation 'org.jetbrains.kotlin:kotlin-gradle-plugin-api:1.6.0'
+    implementation 'com.google.gradle:osdetector-gradle-plugin:1.7.0'
+    implementation 'org.javamodularity:moduleplugin:1.8.10'
+    implementation 'org.jfxcore:compiler:[0.1,0.2)'
 
     testImplementation gradleTestKit()
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
-test {
-    useJUnitPlatform()
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 gradlePlugin {
     plugins {
-        javafxPlugin {
-            id = 'org.openjfx.javafxplugin'
-            displayName = 'JavaFX Gradle Plugin'
-            description = 'Plugin that makes it easy to work with JavaFX'
-            implementationClass = 'org.openjfx.gradle.JavaFXPlugin'
+        jfxcorePlugin {
+            id = 'org.jfxcore.javafxplugin'
+            displayName = 'JFXcore Gradle Plugin'
+            description = 'Supports application development with JFXcore'
+            implementationClass = 'org.jfxcore.gradle.JavaFXPlugin'
         }
     }
 }
 
 pluginBundle {
-    website = 'https://github.com/openjfx/javafx-gradle-plugin'
-    vcsUrl = 'https://github.com/openjfx/javafx-gradle-plugin'
-    tags = [ 'java', 'javafx' ]
+    website = 'https://github.com/jfxcore/gradle-plugin'
+    vcsUrl = 'https://github.com/jfxcore/gradle-plugin'
+    tags = [ 'javafx', 'jfxcore' ]
+}
+
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false
 }
 
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = project.group
-            artifactId = 'javafx-gradle-plugin'
-            version = project.version
-
-            from components.java
+            artifact(tasks.jar)
+            artifact(tasks["sourcesJar"])
+            artifact(tasks["javadocJar"])
+            pom {
+                url = 'https://github.com/jfxcore/gradle-plugin'
+                name = 'gradle-plugin'
+                description = 'JFXcore Gradle Plugin'
+                licenses {
+                    license {
+                        name = 'BSD-3-Claus'
+                        url = 'https://opensource.org/licenses/BSD-3-Clause'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'jfxcore'
+                        name = 'JFXcore'
+                        organization = 'JFXcore'
+                        organizationUrl = 'https://github.com/jfxcore'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:https://github.com/jfxcore/gradle-plugin.git'
+                    developerConnection = 'scm:git:https://github.com/jfxcore/gradle-plugin.git'
+                    url = 'https://github.com/jfxcore/gradle-plugin'
+                }
+            }
         }
     }
     repositories {
         maven {
-            if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+            if (project.hasProperty("REPOSITORY_USERNAME")
+                    && project.hasProperty("REPOSITORY_PASSWORD")
+                    && project.hasProperty("REPOSITORY_URL")) {
                 credentials {
-                    username project.property('sonatypeUsername')
-                    password project.property('sonatypePassword')
+                    username = project.property("REPOSITORY_USERNAME") as String
+                    password = project.property("REPOSITORY_PASSWORD") as String
                 }
-                url = "https://oss.sonatype.org/content/repositories/snapshots/"
+                url = uri(project.property("REPOSITORY_URL") as String)
             }
         }
     }
 }
 
-license {
-    skipExistingHeaders = true
-    mapping {
-        java = 'SLASHSTAR_STYLE'
-    }
+signing {
+    sign(publishing.publications["maven"])
 }
