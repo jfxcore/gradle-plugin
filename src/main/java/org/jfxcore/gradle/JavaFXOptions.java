@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018, Gluon
+ * Copyright (c) 2021, JFXcore
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +28,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.openjfx.gradle;
+package org.jfxcore.gradle;
 
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.repositories.FlatDirectoryArtifactRepository;
@@ -38,18 +39,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.openjfx.gradle.JavaFXModule.PREFIX_MODULE;
+import static org.jfxcore.gradle.JavaFXModule.PREFIX_MODULE;
 
 public class JavaFXOptions {
 
-    private static final String MAVEN_JAVAFX_ARTIFACT_GROUP_ID = "org.openjfx";
+    private static final String MAVEN_JAVAFX_ARTIFACT_GROUP_ID = "org.jfxcore";
     private static final String JAVAFX_SDK_LIB_FOLDER = "lib";
 
     private final Project project;
     private final JavaFXPlatform platform;
 
-    private String version = "16";
     private String sdk;
+    private String compiler;
     private String configuration = "implementation";
     private String lastUpdatedConfiguration;
     private List<String> modules = new ArrayList<>();
@@ -64,19 +65,10 @@ public class JavaFXOptions {
         return platform;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-        updateJavaFXDependencies();
-    }
-
     /**
      * If set, the JavaFX modules will be taken from this local
      * repository, and not from Maven Central
-     * @param sdk, the path to the local JavaFX SDK folder
+     * @param sdk the path to the local JavaFX SDK folder
      */
     public void setSdk(String sdk) {
         this.sdk = sdk;
@@ -85,6 +77,19 @@ public class JavaFXOptions {
 
     public String getSdk() {
         return sdk;
+    }
+
+    /**
+     * If set, the FXML compiler will be taken from this local
+     * JAR file, and not from Maven Central
+     * @param compiler the path to the local FXML compiler
+     */
+    public void setCompiler(String compiler) {
+        this.compiler = compiler;
+    }
+
+    public String getCompiler() {
+        return compiler;
     }
 
     /** Set the configuration name for dependencies, e.g.
@@ -122,8 +127,8 @@ public class JavaFXOptions {
                 project.getDependencies().add(configuration, Map.of("name", javaFXModule.getModuleName()));
             } else {
                 project.getDependencies().add(configuration,
-                        String.format("%s:%s:%s:%s", MAVEN_JAVAFX_ARTIFACT_GROUP_ID, javaFXModule.getArtifactName(),
-                                getVersion(), getPlatform().getClassifier()));
+                        String.format("%s:%s:%s:%s", javaFXModule.getGroupId(), javaFXModule.getArtifactName(),
+                                project.getVersion(), getPlatform().getClassifier()));
             }
         });
         lastUpdatedConfiguration = configuration;

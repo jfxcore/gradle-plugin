@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2018, 2020, Gluon
+ * Copyright (c) 2021, JFXcore
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +28,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.openjfx.gradle;
+package org.jfxcore.gradle;
 
 import org.gradle.api.GradleException;
 
@@ -52,6 +53,7 @@ public enum JavaFXModule {
 
     static final String PREFIX_MODULE = "javafx.";
     private static final String PREFIX_ARTIFACT = "javafx-";
+    private static final String MAVEN_JAVAFX_ARTIFACT_GROUP_ID = "org.jfxcore";
 
     private List<JavaFXModule> dependentModules;
 
@@ -65,8 +67,12 @@ public enum JavaFXModule {
                 .findFirst();
     }
 
+    public String getGroupId() {
+        return MAVEN_JAVAFX_ARTIFACT_GROUP_ID;
+    }
+
     public String getModuleName() {
-        return PREFIX_MODULE + name().toLowerCase(Locale.ROOT);
+        return PREFIX_MODULE + name().toLowerCase(Locale.ROOT).replace("_", "-");
     }
 
     public String getModuleJarFileName() {

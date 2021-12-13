@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Gluon
+ * Copyright (c) 2021, JFXcore
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,55 +27,48 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.openjfx.gradle;
+package org.jfxcore.gradle.util;
 
-import com.google.gradle.osdetector.OsDetector;
-import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
-public enum JavaFXPlatform {
+public class ModuleHelper {
 
-    LINUX("linux", "linux-x86_64"),
-    LINUX_AARCH64("linux-aarch64", "linux-aarch_64"),
-    WINDOWS("win", "windows-x86_64"),
-    OSX("mac", "osx-x86_64"),
-    OSX_AARCH64("mac-aarch64", "osx-aarch_64");
+    private final Set<String> kotlinModuleNames = new HashSet<>();
+    private final Set<File> kotlinJarPaths = new HashSet<>();
 
-    private final String classifier;
-    private final String osDetectorClassifier;
+    public ModuleHelper(Project project) {
+        try {
+            var kotlinCompileClass = Class.forName("org.jetbrains.kotlin.gradle.tasks.KotlinCompile");
 
-    JavaFXPlatform( String classifier, String osDetectorClassifier ) {
-        this.classifier = classifier;
-        this.osDetectorClassifier = osDetectorClassifier;
-    }
+            if (project.getTasks().matching(kotlinCompileClass::isInstance).size() > 0) {
+                var pathHelper = new PathHelper(project);
 
-    public String getClassifier() {
-        return classifier;
-    }
+                var stdlib = pathHelper.getRuntimeDependencyJar("org.jetbrains.kotlin", "kotlin-stdlib");
+                if (stdlib != null) {
+                    kotlinModuleNames.add("kotlin.stdlib");
+                    kotlinJarPaths.add(stdlib);
+                }
 
-    public static JavaFXPlatform detect(Project project) {
-
-        final String osClassifier = project.getExtensions().getByType(OsDetector.class).getClassifier();
-
-        for ( JavaFXPlatform platform: values()) {
-            if ( platform.osDetectorClassifier.equals(osClassifier)) {
-                return platform;
+                var reflect = pathHelper.getRuntimeDependencyJar("org.jetbrains.kotlin", "kotlin-reflect");
+                if (reflect != null) {
+                    kotlinModuleNames.add("kotlin.reflect");
+                    kotlinJarPaths.add(reflect);
+                }
             }
+        } catch (ClassNotFoundException ignored) {
         }
-
-        String supportedPlatforms = Arrays.stream(values())
-                .map(p->p.osDetectorClassifier)
-                .collect(Collectors.joining("', '", "'", "'"));
-
-        throw new GradleException(
-            String.format(
-                    "Unsupported JavaFX platform found: '%s'! " +
-                    "This plugin is designed to work on supported platforms only." +
-                    "Current supported platforms are %s.", osClassifier, supportedPlatforms )
-        );
-
     }
+
+    public Set<String> getKotlinModuleNames() {
+        return kotlinModuleNames;
+    }
+
+    public Set<File> getKotlinJarPaths() {
+        return kotlinJarPaths;
+    }
+
 }

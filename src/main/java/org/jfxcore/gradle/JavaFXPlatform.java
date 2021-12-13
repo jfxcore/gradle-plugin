@@ -27,23 +27,55 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.openjfx.gradle;
+package org.jfxcore.gradle;
 
-import com.google.gradle.osdetector.OsDetectorPlugin;
-import org.gradle.api.Plugin;
+import com.google.gradle.osdetector.OsDetector;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
-import org.javamodularity.moduleplugin.ModuleSystemPlugin;
-import org.openjfx.gradle.tasks.ExecTask;
 
-public class JavaFXPlugin implements Plugin<Project> {
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
-    @Override
-    public void apply(Project project) {
-        project.getPlugins().apply(OsDetectorPlugin.class);
-        project.getPlugins().apply(ModuleSystemPlugin.class);
+public enum JavaFXPlatform {
 
-        project.getExtensions().create("javafx", JavaFXOptions.class, project);
+    LINUX("linux", "linux-x86_64"),
+    //LINUX_AARCH64("linux-aarch64", "linux-aarch_64"),
+    WINDOWS("win", "windows-x86_64"),
+    OSX("mac", "osx-x86_64"),
+    OSX_AARCH64("mac-aarch64", "osx-aarch_64");
 
-        project.getTasks().create("configJavafxRun", ExecTask.class, project);
+    private final String classifier;
+    private final String osDetectorClassifier;
+
+    JavaFXPlatform( String classifier, String osDetectorClassifier ) {
+        this.classifier = classifier;
+        this.osDetectorClassifier = osDetectorClassifier;
+    }
+
+    public String getClassifier() {
+        return classifier;
+    }
+
+    public static JavaFXPlatform detect(Project project) {
+
+        final String osClassifier = project.getExtensions().getByType(OsDetector.class).getClassifier();
+
+        for ( JavaFXPlatform platform: values()) {
+            if ( platform.osDetectorClassifier.equals(osClassifier)) {
+                return platform;
+            }
+        }
+
+        String supportedPlatforms = Arrays.stream(values())
+                .map(p->p.osDetectorClassifier)
+                .collect(Collectors.joining("', '", "'", "'"));
+
+        throw new GradleException(
+            String.format(
+                    "Unsupported JavaFX platform found: '%s'! " +
+                    "This plugin is designed to work on supported platforms only." +
+                    "Current supported platforms are %s.", osClassifier, supportedPlatforms )
+        );
+
     }
 }
