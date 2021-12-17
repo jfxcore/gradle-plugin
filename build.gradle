@@ -7,20 +7,19 @@ plugins {
 }
 
 group 'org.jfxcore'
-version '18-SNAPSHOT'
+version project.findProperty('TAG_VERSION') ?: '18-SNAPSHOT'
 
 java {
     withSourcesJar()
     withJavadocJar()
-    sourceCompatibility = JavaVersion.VERSION_16
-    targetCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 repositories {
     mavenCentral()
-    maven {
-        url 'https://plugins.gradle.org/m2/'
-    }
+    maven { url 'https://plugins.gradle.org/m2/' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
@@ -32,8 +31,8 @@ dependencies {
     implementation 'org.jfxcore:compiler:[0.1,0.2)'
 
     testImplementation gradleTestKit()
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }
 
 processResources {

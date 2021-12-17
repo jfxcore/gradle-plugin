@@ -32,58 +32,70 @@ package org.jfxcore.gradle.compiler;
 import org.gradle.api.GradleException;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.SetProperty;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.services.BuildServiceParameters;
 import org.gradle.api.tasks.SourceSet;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+@SuppressWarnings("UnstableApiUsage")
 public abstract class CompilerService implements BuildService<CompilerService.Params>, AutoCloseable {
 
     public interface Params extends BuildServiceParameters {
         Property<String> getCompilerJar();
+        SetProperty<File> getCompileClasspath();
     }
 
-    private final URLClassLoader classLoader;
+    private final Set<File> compileClasspath;
+    private final CompilerClassLoader classLoader;
     private final ExceptionHelper exceptionHelper;
     private final Map<SourceSet, Compiler> compilers = new IdentityHashMap<>();
 
     public CompilerService() throws MalformedURLException {
-        checkBuildscriptDependencies();
-
+        compileClasspath = getParameters().getCompileClasspath().getOrElse(Collections.emptySet());
         String compilerJar = getParameters().getCompilerJar().getOrNull();
+        List<URL> urls = new ArrayList<>();
+
         if (compilerJar != null && !compilerJar.isEmpty()) {
-            this.classLoader = new URLClassLoader(
-                new URL[] {new URL("file", null, compilerJar)},
-                getClass().getClassLoader());
-        } else {
-            this.classLoader = null;
+            urls.add(new URL("file", null, compilerJar));
         }
 
-        this.exceptionHelper = new ExceptionHelper(classLoader);
+        urls.addAll(compileClasspath.stream().map(file -> {
+            try {
+                return new URL("file", null, file.getCanonicalPath());
+            } catch (IOException e) {
+                return null;
+            }
+        }).filter(Objects::nonNull).toList());
+
+        classLoader = new CompilerClassLoader(urls.toArray(URL[]::new), getClass().getClassLoader());
+        checkDependencies(classLoader);
+
+        exceptionHelper = new ExceptionHelper(classLoader);
     }
 
     @Override
     public void close() throws Exception {
-        if (classLoader != null) {
-            classLoader.close();
-        }
+        classLoader.close();
     }
 
     public ExceptionHelper getExceptionHelper() {
         return exceptionHelper;
     }
 
-    public Compiler newCompiler(SourceSet sourceSet, Set<File> classpath, Logger logger) throws Exception {
-        Compiler instance = new Compiler(logger, classpath, classLoader);
+    public Compiler newCompiler(SourceSet sourceSet, Logger logger) throws Exception {
+        Compiler instance = new Compiler(logger, compileClasspath, classLoader);
         compilers.put(sourceSet, instance);
         return instance;
     }
@@ -97,23 +109,29 @@ public abstract class CompilerService implements BuildService<CompilerService.Pa
         throw new IllegalStateException("No compiler found for source set '" + sourceSet.getName() + "'");
     }
 
-    private static void checkBuildscriptDependencies() {
+    private static void checkDependencies(ClassLoader classLoader) {
+        try {
+            Class.forName(Compiler.COMPILER_NAME, true, classLoader);
+        } catch (ClassNotFoundException ex) {
+            throw new GradleException("Compiler not found");
+        }
+
         List<String> missingDeps = new ArrayList<>();
 
         try {
-            Class.forName("javafx.beans.Observable");
+            Class.forName("javafx.beans.Observable", true, classLoader);
         } catch (ClassNotFoundException ex) {
             missingDeps.add("javafx.base");
         }
 
         try {
-            Class.forName("javafx.geometry.Bounds");
+            Class.forName("javafx.geometry.Bounds", true, classLoader);
         } catch (ClassNotFoundException ex) {
             missingDeps.add("javafx.graphics");
         }
 
         if (!missingDeps.isEmpty()) {
-            throw new GradleException("Missing buildscript dependencies: " + String.join(", ", missingDeps));
+            throw new GradleException("Missing module dependencies: " + String.join(", ", missingDeps));
         }
     }
 

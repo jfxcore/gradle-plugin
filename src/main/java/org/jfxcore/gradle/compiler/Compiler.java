@@ -39,8 +39,8 @@ import java.util.Set;
 
 public class Compiler {
 
+    public static final String COMPILER_NAME = "org.jfxcore.compiler.Compiler";
     private static final String LOGGER_NAME = "org.jfxcore.compiler.Logger";
-    private static final String COMPILER_NAME = "org.jfxcore.compiler.Compiler";
 
     private final Object compilerInstance;
     private final Method parseFilesMethod;
@@ -48,34 +48,35 @@ public class Compiler {
     private final Method compileFilesMethod;
 
     public Compiler(Logger logger, Set<File> classpath, ClassLoader classLoader) throws Exception {
-        Class<?> compilerLoggerClass = classForName(LOGGER_NAME, classLoader);
+        Class<?> compilerLoggerClass = Class.forName(LOGGER_NAME, true, classLoader);
 
         Object compilerLogger = Proxy.newProxyInstance(
             compilerLoggerClass.getClassLoader(),
             new Class[] {compilerLoggerClass},
             new InvocationHandler() {
                 @Override
-                public Object invoke(Object proxy, Method method, Object[] args) {
+                public Object invoke(Object proxy, Method method, Object[] args)
+                        throws InvocationTargetException, IllegalAccessException {
                     switch (method.getName()) {
                         case "debug":
                             logger.debug((String)args[0]);
-                            break;
+                            return null;
 
                         case "info":
                             logger.lifecycle((String)args[0]);
-                            break;
+                            return null;
 
                         case "error":
                             logger.error((String)args[0]);
-                            break;
+                            return null;
                     }
 
-                    return null;
+                    return method.invoke(proxy, args);
                 }
             });
 
-        compilerInstance = classForName(COMPILER_NAME, classLoader)
-            .getConstructor(new Class[] {Set.class, compilerLoggerClass})
+        compilerInstance = Class.forName(COMPILER_NAME, true, classLoader)
+            .getConstructor(Set.class, compilerLoggerClass)
             .newInstance(classpath, compilerLogger);
 
         parseFilesMethod = compilerInstance.getClass().getMethod("parseFiles", File.class);
@@ -105,10 +106,6 @@ public class Compiler {
         } catch (InvocationTargetException ex) {
             throw ex.getCause();
         }
-    }
-
-    private Class<?> classForName(String name, ClassLoader classLoader) throws ClassNotFoundException {
-        return classLoader != null ? Class.forName(name, true, classLoader) : Class.forName(name);
     }
 
 }

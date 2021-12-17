@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Set;
 import java.util.function.Predicate;
 
 public abstract class ProcessMarkupTask extends DefaultTask {
@@ -56,13 +55,12 @@ public abstract class ProcessMarkupTask extends DefaultTask {
         Project project = getProject();
         PathHelper pathHelper = new PathHelper(project);
         CompilerService compilerService = getCompilerService().get();
-        Set<File> compileClasspath = pathHelper.getCompileClasspath();
 
         try {
             // Invoke the FXML parse and source generation stages for every source set.
             // This will generate .java source files that are placed in the generated sources directory.
             for (SourceSet sourceSet : pathHelper.getSourceSets()) {
-                var compiler = compilerService.newCompiler(sourceSet, compileClasspath, getLogger());
+                var compiler = compilerService.newCompiler(sourceSet, getLogger());
 
                 for (File sourceDir : sourceSet.getAllSource().getSrcDirs()) {
                     compiler.parseFiles(sourceDir);
@@ -74,8 +72,8 @@ public abstract class ProcessMarkupTask extends DefaultTask {
                 // Delete all .class files that may have been created by a previous compiler run.
                 // This is necessary because the FXML compiler needs a 'clean slate' to work with.
                 Predicate<Path> fileFilter = path -> path.toString().toLowerCase().endsWith(".java");
-                for (Path file : PathHelper.enumerateFiles(genSrcDir, fileFilter)) {
-                    String fileName = PathHelper.getFileNameWithoutExtension(file.toFile()) + ".class";
+                for (Path file : pathHelper.enumerateFiles(genSrcDir, fileFilter)) {
+                    String fileName = pathHelper.getFileNameWithoutExtension(file.toFile()) + ".class";
                     Path relFile = genSrcDir.relativize(file).getParent().resolve(fileName);
                     Path classesDir = sourceSet.getJava().getClassesDirectory().get().getAsFile().toPath();
                     Path classFile = classesDir.resolve(relFile);

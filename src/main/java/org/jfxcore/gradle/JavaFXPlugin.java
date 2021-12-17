@@ -58,6 +58,13 @@ public class JavaFXPlugin implements Plugin<Project> {
 
         project.getTasks().create("configJavafxRun", ExecTask.class, project);
 
+        // For each source set, add the corresponding generated sources directory, so it can be
+        // picked up by the Java compiler.
+        var pathHelper = new PathHelper(project);
+        for (SourceSet sourceSet : pathHelper.getSourceSets()) {
+            sourceSet.getJava().srcDir(pathHelper.getGeneratedSourcesDir(sourceSet));
+        }
+
         // Configure parseMarkup to run before, and compileMarkup to run after the source code is compiled.
         project.afterEvaluate(p -> {
             var provider = createProvider(project);
@@ -87,21 +94,17 @@ public class JavaFXPlugin implements Plugin<Project> {
                 }
             }
         });
-
-        // For each source set, add the corresponding generated sources directory, so it can be
-        // picked up by the Java compiler.
-        var pathHelper = new PathHelper(project);
-        for (SourceSet sourceSet : pathHelper.getSourceSets()) {
-            sourceSet.getJava().srcDir(pathHelper.getGeneratedSourcesDir(sourceSet));
-        }
     }
 
+    @SuppressWarnings("UnstableApiUsage")
     private Provider<CompilerService> createProvider(Project project) {
         var options = (JavaFXOptions)project.getExtensions().findByName("javafx");
 
         return project.getGradle().getSharedServices()
             .registerIfAbsent("compilerService:" + project.getName(), CompilerService.class, spec -> {
-                if (options.getCompiler() != null && !options.getCompiler().isEmpty()) {
+                spec.getParameters().getCompileClasspath().set(new PathHelper(project).getCompileClasspath());
+
+                if (options != null && options.getCompiler() != null && !options.getCompiler().isEmpty()) {
                     spec.getParameters().getCompilerJar().set(options.getCompiler());
                 }
             });

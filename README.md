@@ -33,7 +33,7 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath 'org.jfxcore:javafx-plugin:18'
+            classpath 'org.jfxcore:gradle-plugin:18'
         }
     }
     apply plugin: 'org.jfxcore.javafxplugin'
@@ -47,7 +47,7 @@ To use the plugin, apply the following two steps:
             }
         }
         dependencies {
-            classpath("org.jfxcore:javafx-plugin:18")
+            classpath("org.jfxcore:gradle-plugin:18")
         }
     }
     apply(plugin = "org.jfxcore.javafxplugin")

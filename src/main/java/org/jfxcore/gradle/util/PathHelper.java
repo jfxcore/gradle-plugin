@@ -30,9 +30,8 @@
 package org.jfxcore.gradle.util;
 
 import org.gradle.api.Project;
-import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.SourceSet;
-import org.jfxcore.gradle.JavaFXOptions;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +44,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PathHelper {
+public final class PathHelper {
 
     private final Project project;
 
@@ -60,17 +59,16 @@ public class PathHelper {
     }
 
     public Set<SourceSet> getSourceSets() {
-        return project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets();
+        return project.getExtensions().getByType(JavaPluginExtension.class).getSourceSets();
     }
 
     public Set<File> getCompileClasspath() {
-        return project.getConvention().getPlugin(JavaPluginConvention.class).getSourceSets().stream()
+        return getSourceSets().stream()
             .flatMap(sourceSet -> sourceSet.getCompileClasspath().getFiles().stream())
             .collect(Collectors.toSet());
     }
 
     public File getRuntimeDependencyJar(String groupId, String name) {
-        JavaFXOptions options = project.getExtensions().getByType(JavaFXOptions.class);
         var configuration = project.getConfigurations().findByName("runtimeClasspath");
         if (configuration != null) {
             var files = configuration.files(dep -> groupId.equals(dep.getGroup()) && name.equals(dep.getName()));
@@ -82,7 +80,7 @@ public class PathHelper {
         return null;
     }
 
-    public static Iterable<Path> enumerateFiles(Path basePath, Predicate<Path> filter) throws IOException {
+    public Iterable<Path> enumerateFiles(Path basePath, Predicate<Path> filter) throws IOException {
         Iterator<Path> it;
         if (Files.isDirectory(basePath)) {
             try (Stream<Path> stream = Files.walk(basePath)) {
@@ -95,7 +93,7 @@ public class PathHelper {
         return Collections::emptyIterator;
     }
 
-    public static String getFileNameWithoutExtension(File file) {
+    public String getFileNameWithoutExtension(File file) {
         String name = file.getName();
         int lastIdx = name.lastIndexOf('.');
         return name.substring(0, lastIdx < 0 ? name.length() : lastIdx);

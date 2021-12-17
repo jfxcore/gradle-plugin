@@ -39,11 +39,7 @@ public class ExceptionHelper {
 
     public ExceptionHelper(ClassLoader classLoader) {
         try {
-            if (classLoader != null) {
-                markupExceptionClass = Class.forName(CLASS_NAME, true, classLoader);
-            } else {
-                markupExceptionClass = Class.forName(CLASS_NAME);
-            }
+            markupExceptionClass = Class.forName(CLASS_NAME, true, classLoader);
         } catch (ClassNotFoundException ex) {
             String message = "Class not found: " + ex.getMessage();
             throw new RuntimeException(message, ex);
