@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, JFXcore
+ * Copyright (c) 2022, JFXcore
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,13 +51,13 @@ public abstract class CompileMarkupTask extends DefaultTask {
             for (SourceSet sourceSet : new PathHelper(getProject()).getSourceSets()) {
                 compilerService.getCompiler(sourceSet).compileFiles();
             }
+        } catch (GradleException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             if (compilerService.getExceptionHelper().isMarkupException(ex)) {
                 getProject().getLogger().error(compilerService.getExceptionHelper().format(ex));
             } else {
-                String message = ex.getMessage();
-                throw new GradleException(
-                    message == null || message.isEmpty() ? "Internal compiler error" : message, ex);
+                throw ex;
             }
 
             throw new GradleException("Compilation failed; see the compiler error output for details.");
