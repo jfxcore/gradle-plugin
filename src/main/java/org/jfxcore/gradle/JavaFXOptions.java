@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018, Gluon
- * Copyright (c) 2021, JFXcore
+ * Copyright (c) 2022, JFXcore
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,7 @@ public class JavaFXOptions {
     private final Project project;
     private final JavaFXPlatform platform;
 
+    private String version;
     private String sdk;
     private String compiler;
     private String configuration = "implementation";
@@ -59,10 +60,20 @@ public class JavaFXOptions {
     public JavaFXOptions(Project project) {
         this.project = project;
         this.platform = JavaFXPlatform.detect(project);
+        this.version = project.getVersion().toString();
     }
 
     public JavaFXPlatform getPlatform() {
         return platform;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+        updateJavaFXDependencies();
     }
 
     /**
@@ -128,7 +139,7 @@ public class JavaFXOptions {
             } else {
                 project.getDependencies().add(configuration,
                         String.format("%s:%s:%s:%s", javaFXModule.getGroupId(), javaFXModule.getArtifactName(),
-                                project.getVersion(), getPlatform().getClassifier()));
+                                getVersion(), getPlatform().getClassifier()));
             }
         });
         lastUpdatedConfiguration = configuration;

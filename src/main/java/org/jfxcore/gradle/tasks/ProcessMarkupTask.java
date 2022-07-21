@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, JFXcore
+ * Copyright (c) 2022, JFXcore
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,7 +78,7 @@ public abstract class ProcessMarkupTask extends DefaultTask {
                     Path classesDir = sourceSet.getJava().getClassesDirectory().get().getAsFile().toPath();
                     Path classFile = classesDir.resolve(relFile);
 
-                    if (Files.exists(classFile)){
+                    if (Files.exists(classFile)) {
                         try {
                             Files.delete(classFile);
                         } catch (IOException ex) {
@@ -87,13 +87,13 @@ public abstract class ProcessMarkupTask extends DefaultTask {
                     }
                 }
             }
+        } catch (GradleException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             if (compilerService.getExceptionHelper().isMarkupException(ex)) {
                 project.getLogger().error(compilerService.getExceptionHelper().format(ex));
             } else {
-                String message = ex.getMessage();
-                throw new GradleException(
-                    message == null || message.isEmpty() ? "Internal compiler error" : message, ex);
+                throw ex;
             }
 
             throw new GradleException("Compilation failed; see the compiler error output for details.");
