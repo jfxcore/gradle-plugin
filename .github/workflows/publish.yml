@@ -69,7 +69,7 @@ jobs:
           PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
 
       - name: Build release
-        run: ./gradlew publish publishPlugins -x test -PREPOSITORY_URL=${URL} -PREPOSITORY_USERNAME=${USERNAME} -PREPOSITORY_PASSWORD=${PASSWORD} -PTAG_VERSION=${VERSION} -Pgradle.publish.key=${PLUGIN_KEY} -Pgradle.publish.secret=${PLUGIN_SECRET}
+        run: ./gradlew publishPlugins -x test -PREPOSITORY_URL=${URL} -PREPOSITORY_USERNAME=${USERNAME} -PREPOSITORY_PASSWORD=${PASSWORD} -PTAG_VERSION=${VERSION} -Pgradle.publish.key=${PLUGIN_KEY} -Pgradle.publish.secret=${PLUGIN_SECRET}
         if: ${{ env.SNAPSHOT_BUILD == 'false' }}
         env:
           VERSION: ${{ steps.tagName.outputs.tag }}
