@@ -63,9 +63,6 @@ tasks.withType(GenerateModuleMetadata) {
 publishing {
     publications {
         pluginMaven(MavenPublication) {
-            artifact(tasks.jar)
-            artifact(tasks["sourcesJar"])
-            artifact(tasks["javadocJar"])
             pom {
                 url = 'https://github.com/jfxcore/gradle-plugin'
                 name = 'gradle-plugin'
