@@ -62,7 +62,7 @@ tasks.withType(GenerateModuleMetadata) {
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        pluginMaven(MavenPublication) {
             artifact(tasks.jar)
             artifact(tasks["sourcesJar"])
             artifact(tasks["javadocJar"])
@@ -108,5 +108,5 @@ publishing {
 }
 
 signing {
-    sign(publishing.publications["maven"])
+    sign(publishing.publications["pluginMaven"])
 }
