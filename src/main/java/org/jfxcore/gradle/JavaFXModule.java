@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018, 2020, Gluon
- * Copyright (c) 2021, JFXcore
+ * Copyright (c) 2022, JFXcore
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,8 @@ public enum JavaFXModule {
     FXML(BASE, GRAPHICS),
     MEDIA(BASE, GRAPHICS),
     SWING(BASE, GRAPHICS),
-    WEB(BASE, CONTROLS, GRAPHICS, MEDIA);
+    WEB(BASE, CONTROLS, GRAPHICS, MEDIA),
+    VALIDATION(BASE, GRAPHICS);
 
     static final String PREFIX_MODULE = "javafx.";
     private static final String PREFIX_ARTIFACT = "javafx-";
@@ -104,7 +105,7 @@ public enum JavaFXModule {
                 .collect(Collectors.toList());
 
         if (! invalidModules.isEmpty()) {
-            throw new GradleException("Found one or more invalid JavaFX module names: " + invalidModules);
+            throw new GradleException("Found one or more invalid module names: " + invalidModules);
         }
     }
 
