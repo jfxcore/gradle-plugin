@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018, Gluon
- * Copyright (c) 2021, JFXcore
+ * Copyright (c) 2022, JFXcore
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,6 +90,7 @@ public class JavaFXPlugin implements Plugin<Project> {
                     for (Task task : collection) {
                         task.dependsOn(processMarkup);
                         task.finalizedBy(compileMarkup);
+                        compileMarkup.dependsOn(task);
                     }
                 }
             }
