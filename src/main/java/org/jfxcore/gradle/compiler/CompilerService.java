@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, JFXcore
+ * Copyright (c) 2022, JFXcore
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,12 +101,7 @@ public abstract class CompilerService implements BuildService<CompilerService.Pa
     }
 
     public Compiler getCompiler(SourceSet sourceSet) {
-        Compiler instance = compilers.get(sourceSet);
-        if (instance != null) {
-            return instance;
-        }
-
-        throw new IllegalStateException("No compiler found for source set '" + sourceSet.getName() + "'");
+        return compilers.get(sourceSet);
     }
 
     private static void checkDependencies(ClassLoader classLoader) {

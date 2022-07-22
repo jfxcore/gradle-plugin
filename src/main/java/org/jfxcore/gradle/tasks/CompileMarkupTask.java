@@ -49,7 +49,13 @@ public abstract class CompileMarkupTask extends DefaultTask {
 
         try {
             for (SourceSet sourceSet : new PathHelper(getProject()).getSourceSets()) {
-                compilerService.getCompiler(sourceSet).compileFiles();
+                var compiler = compilerService.getCompiler(sourceSet);
+                if (compiler == null) {
+                    throw new GradleException(
+                        ":compileMarkup cannot be run in isolation, please run :processMarkup first");
+                }
+
+                compiler.compileFiles();
             }
         } catch (GradleException ex) {
             throw ex;
