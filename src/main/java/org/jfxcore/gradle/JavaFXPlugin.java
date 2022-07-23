@@ -46,6 +46,7 @@ import org.jfxcore.gradle.tasks.CompileMarkupTask;
 import org.jfxcore.gradle.tasks.ExecTask;
 import org.jfxcore.gradle.tasks.ProcessMarkupTask;
 import org.jfxcore.gradle.util.PathHelper;
+import java.util.Map;
 
 public class JavaFXPlugin implements Plugin<Project> {
 
@@ -57,6 +58,13 @@ public class JavaFXPlugin implements Plugin<Project> {
         project.getExtensions().create("javafx", JavaFXOptions.class, project);
 
         project.getTasks().create("configJavafxRun", ExecTask.class, project);
+
+        // Exclude OpenJFX module dependencies
+        for (var configuration : project.getConfigurations()) {
+            for (var module : JavaFXModule.values()) {
+                configuration.exclude(Map.of("group", "org.openjfx", "module", module.getModuleName()));
+            }
+        }
 
         // For each source set, add the corresponding generated sources directory, so it can be
         // picked up by the Java compiler.
